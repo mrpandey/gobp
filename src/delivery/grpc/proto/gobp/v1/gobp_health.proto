@@ -1,0 +1,16 @@
+syntax = "proto3";
+package gobp.v1;
+
+option go_package = "./pb_v1";
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  bool pg_reachable = 1;
+}
+
+message PingRequest {}
+
+message PingResponse {
+  string message = 1;
+}

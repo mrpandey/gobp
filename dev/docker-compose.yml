@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      dockerfile: Dockerfile
+      context: ..
+    # takes precendence over env_file
+    environment:
+      - DGN=dev
+      # pg host should be name of database service
+      - POSTGRES_HOST=postgres
+      - POSTGRES_SSL_MODE=disable
+    env_file:
+      - ../.env
+    ports:
+      - ${REST_PORT-3000}:3000
+      - ${GRPC_PORT-3001}:3001
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  
+  # applies migration
+  migrate:
+    build:
+      dockerfile: Dockerfile.migrate
+      context: ..
+    environment:
+      - POSTGRES_HOST=postgres
+    env_file:
+      - ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15.2-alpine
+    command: ["postgres", "-c", "log_statement=all"]
+    env_file:
+      - ../.env
+    ports:
+      - ${POSTGRES_PORT-5432}:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 5s
+      timeout: 2s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  pgdata:

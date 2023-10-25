@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package gobp.v1;
+
+import "gobp/v1/gobp_auth.proto";
+import "gobp/v1/gobp_health.proto";
+
+option go_package = "./pb_v1";
+
+service GobpService {
+  rpc Ping(PingRequest) returns (PingResponse) {}
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+
+  rpc CreateToken(CreateTokenRequest) returns (CreateTokenResponse) {}
+}

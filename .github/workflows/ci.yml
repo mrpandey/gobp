@@ -1,0 +1,80 @@
+name: Run Tests
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - '**'
+jobs:
+  ci-test:
+    runs-on: self-hosted
+    env:
+      ENVIRONMENT: ci
+      DGN: local
+
+    services:
+      postgres:
+        image: postgres:15.2
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gobp
+        ports:
+          - 5432:5432
+    steps:
+      - name: Branch Protection workflow
+        if: github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref != 'develop'
+        run: |
+          echo "This is a protected branch. Please create a pull request to the develop branch."
+          exit 1
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: SSH key setup
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIV_KEY_EVENTS_LIB }}
+
+      - name: Set up Go 1.20
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          check-latest: true
+          cache-dependency-path: go.sum
+      
+      - name: Install Atlas
+        run: |
+          curl -sSf https://atlasgo.sh | sh 
+
+      - name: Install dependencies
+        run: |
+          go version
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+          go mod download
+
+      - name: Pre-commit
+        uses: pre-commit/action@v3.0.0
+
+      - name: Unit tests
+        run: |
+              sudo go test ./... -failfast -coverprofile coverage.out -covermode count
+              sudo go tool cover -func coverage.out
+
+      - name: Test coverage
+        env:
+            TESTCOVERAGE_THRESHOLD: 0
+        run: |
+              totalCoverage=`go tool cover -func=coverage.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
+              echo "Current coverage      : $totalCoverage %"
+              echo "Required threshold    : $TESTCOVERAGE_THRESHOLD %"
+              if (( $(echo "$totalCoverage $TESTCOVERAGE_THRESHOLD" | awk '{print ($1 > $2)}') )); then
+                  echo "OK"
+              else
+                  echo "Failed"
+                  exit 1
+              fi

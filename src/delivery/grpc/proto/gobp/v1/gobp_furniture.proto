@@ -1,0 +1,23 @@
+syntax = "proto3";
+package gobp.v1;
+
+option go_package = "./pb_v1";
+
+message GetFurnitureRequest {
+  string id = 1;
+}
+
+message GetFurnitureResponse {
+  int64 id = 1;
+  string name = 2;
+  string type = 3;
+}
+
+message AddFurnitureRequest {
+  string name = 1;
+  string type = 2;
+}
+
+message AddFurnitureResponse {
+  int64 id = 1;
+}

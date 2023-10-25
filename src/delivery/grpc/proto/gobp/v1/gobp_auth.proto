@@ -1,0 +1,15 @@
+syntax = "proto3";
+package gobp.v1;
+
+option go_package = "./pb_v1";
+
+message CreateTokenRequest {
+  string client_slug = 1;
+  string client_secret = 2;
+}
+
+message CreateTokenResponse {
+  string access_token = 1;
+  string token_type = 2;
+  uint64 expires_in = 3;
+}

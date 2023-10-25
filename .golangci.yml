@@ -1,0 +1,48 @@
+run:
+  concurrency: 6
+  timeout: 5m
+  allow-parallel-runners: true
+  skip-dirs:
+    - dev
+linters:
+  enable:
+    - revive
+    - asasalint
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - dupl
+    - errchkjson
+    - errname
+    - errorlint
+    - gocognit
+    - goconst
+    - gocritic
+    - godot
+    - godox
+    - goerr113
+    - gofmt
+    - goimports
+    - gosec
+    - importas
+    - lll
+    - misspell
+linters-settings:
+  godox:
+    keywords:
+      - BUG
+      - FIXME
+      - OPTIMIZE # marks code that should be optimized before merging
+      - HACK # marks hack-around that should be removed before merging
+  lll:
+    line-length: 120
+    tab-width: 4
+  revive:
+    rules:
+      - name: unused-parameter
+        disabled: false
+        severity: warning
+  cyclop:
+    max-complexity: 25
+    skip-tests: true

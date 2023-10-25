@@ -1,0 +1,16 @@
+version: v1
+
+# protoc plugins
+plugins:
+
+  # protoc-gen-go generates serializers
+  - plugin: go
+    out: gen/go/
+    opt: paths=source_relative
+  
+  # protoc-gen-go-grpc generates grpc service
+  - plugin: go-grpc
+    out: gen/go/
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=true
